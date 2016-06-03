@@ -15,6 +15,9 @@ using namespace cv;
 
 #define PORT 7200
 
+#define FRAME_WIDTH         640
+#define FRAME_HEIGHT        480
+
 void error(const char *msg)
 {
   perror(msg);
@@ -23,7 +26,7 @@ void error(const char *msg)
 
 int main()
 {
-  int sockfd, newsockfd, portno, n, imgSize, bytes=0;
+  int sockfd, newsockfd, portno, n, imgSize, bytes=0, IM_HEIGHT, IM_WIDTH;;
   socklen_t clilen;
   char buffer[256];
   struct sockaddr_in serv_addr, cli_addr;
@@ -55,28 +58,37 @@ int main()
 
   // n=write(newsockfd, "I got your message", 18);
   // if(n<0) error("ERROR writing to socket");
+  bool running = true;
 
-  img = Mat::zeros(768, 769, CV_8UC3);
+  while(running)
+  {
+    IM_HEIGHT = FRAME_HEIGHT;
+    IM_WIDTH = FRAME_WIDTH;
+    img = Mat::zeros(FRAME_HEIGHT, FRAME_WIDTH, CV_8UC3);
 
-  imgSize = img.total()*img.elemSize();
-  uchar sockData[imgSize];
+    imgSize = img.total()*img.elemSize();
+    uchar sockData[imgSize];
 
-  for(int i=0;i<imgSize;i+=bytes)
-    if ((bytes=recv(newsockfd, sockData+i, imgSize-i,0))==-1) error("recv failed");
+    for(int i=0;i<imgSize;i+=bytes)
+      if ((bytes=recv(newsockfd, sockData+i, imgSize-i,0))==-1) error("recv failed");
 
-  int ptr=0;
+    int ptr=0;
 
-  for(int i=0;i<img.rows;++i)
-    for(int j=0;j<img.cols;++j)
-    {
-      img.at<Vec3b>(i,j) = Vec3b(sockData[ptr+0],sockData[ptr+1],sockData[ptr+2]);
-      ptr=ptr+3;
-    }
+    for(int i=0;i<img.rows;++i)
+      for(int j=0;j<img.cols;++j)
+      {
+        img.at<Vec3b>(i,j) = Vec3b(sockData[ptr+0],sockData[ptr+1],sockData[ptr+2]);
+        ptr=ptr+3;
+      }
 
-  imwrite("test.jpg", img);
-  namedWindow( "Server", CV_WINDOW_AUTOSIZE );// Create a window for display.
-  imshow( "Server", img );
-  waitKey(0);
+    imwrite("test.jpg", img);
+    namedWindow( "Server", CV_WINDOW_AUTOSIZE );// Create a window for display.
+    imshow( "Server", img );
+    char key = waitKey(30);
+    running = key;
+    //esc
+    if(key==27) running =false;
+  }
 
   close(newsockfd);
   close(sockfd);

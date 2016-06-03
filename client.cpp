@@ -9,9 +9,12 @@
 #include <iostream>
 #include "opencv2/core/core.hpp"
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #define LOCALHOST "127.0.0.1"
 #define PORT 7200
+#define FRAME_WIDTH         640
+#define FRAME_HEIGHT        480
 
 using namespace std;
 using namespace cv;
@@ -24,10 +27,11 @@ void error(const char *msg)
 
 int main()
 {
-  int sockfd, portno, n, imgSize;
+  int sockfd, portno, n, imgSize, IM_HEIGHT, IM_WIDTH;
   struct sockaddr_in serv_addr;
   struct hostent *server;
   char buffer[256];
+  Mat cameraFeed;
 
   portno = PORT;
   sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -51,19 +55,39 @@ int main()
   if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
       error("ERROR connecting");
 
-  Mat frame = imread("image.jpg", CV_LOAD_IMAGE_COLOR);
-  if(!frame.data)
+  VideoCapture capture;
+
+	capture.open(0);
+
+  while(true)
   {
-      cout <<  "Could not open or find the image" << endl ;
-      return -1;
+    /* store image to matrix && test frame */
+    if(!capture.read(cameraFeed))
+    {
+        cout << "Video Ended" << endl;
+        break;
+    }
+
+    int height = cameraFeed.rows;
+    int width = cameraFeed.cols;
+
+    Mat cropped = Mat(cameraFeed, Rect(width/2 - width/7,
+                                       height/2 - height/9,
+                                       2*width/7, 2*height/7));
+    cameraFeed = cropped;
+
+    IM_HEIGHT = FRAME_HEIGHT;
+    IM_WIDTH = FRAME_WIDTH;
+
+    resize(cameraFeed, cameraFeed, Size( IM_WIDTH , IM_HEIGHT ));
+
+    cameraFeed = (cameraFeed.reshape(0,1));
+
+    imgSize=cameraFeed.total()*cameraFeed.elemSize();
+
+    n = send(sockfd, cameraFeed.data, imgSize, 0);
+    if (n < 0) error("ERROR writing to socket");
   }
-
-  frame = (frame.reshape(0,1));
-
-  imgSize=frame.total()*frame.elemSize();
-
-  n = send(sockfd, frame.data, imgSize, 0);
-  if (n < 0) error("ERROR writing to socket");
 
   close(sockfd);
 
