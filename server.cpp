@@ -51,6 +51,10 @@ int main()
   newsockfd=accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
   if(newsockfd<0) error("ERROR on accept");
 
+  uchar sock[3];
+  cout << sock <<endl;
+  cout << sock+3 <<endl;
+
   // bzero(buffer,1024);
   // n = read(newsockfd, buffer, 1023);
   // if(n<0) error("ERROR reading from socket");

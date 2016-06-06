@@ -81,8 +81,6 @@ int main()
 
     resize(cameraFeed, cameraFeed, Size( IM_WIDTH , IM_HEIGHT ));
 
-    cameraFeed = (cameraFeed.reshape(0,1));
-
     imgSize=cameraFeed.total()*cameraFeed.elemSize();
 
     n = send(sockfd, cameraFeed.data, imgSize, 0);
