@@ -42,31 +42,30 @@ while running:
     cameraFeed = np.zeros(shape, np.uint8)
     imgSize = cameraFeed.size
     sockData = b''
+    result = True
 
     while imgSize:
         nbytes=conn.recv(imgSize)
-        if not nbytes: break
+        if not nbytes: break; result = False
         sockData+=nbytes
         imgSize-=len(nbytes)
 
-    unp = lambda leng: struct.unpack('B', sockData[ptr+leng])[0]
+    if result:
+        unp = lambda leng: struct.unpack('B', sockData[ptr+leng])[0]
 
-    for i in range(0, cameraFeed.shape[0]):
-        for j in range(0, cameraFeed.shape[1]):
-            cameraFeed[i,j] = [unp(0),unp(1),unp(2)]
-            ptr=ptr+3
+        for i in range(0, cameraFeed.shape[0]):
+            for j in range(0, cameraFeed.shape[1]):
+                cameraFeed[i,j] = [unp(0),unp(1),unp(2)]
+                ptr=ptr+3
 
-    # Create a window for display.
-    cv2.namedWindow("server");
-    cv2.imshow("server", cameraFeed)
-    key = cv2.waitKey(30)
-    running = key
+        # Create a window for display.
+        cv2.namedWindow("server");
+        cv2.imshow("server", cameraFeed)
+        key = cv2.waitKey(30)
+        running = key
 
-    # esc
-    if key==27:
-        running =False
-
-    # data = conn.recv(1024)
-    # if not data: break
-    # conn.send(data)
+        # esc
+        if key==27:
+            running =False
+    else : running =False
 conn.close()
