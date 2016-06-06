@@ -13,6 +13,16 @@ FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
 CHANNEL=3
 
+@profile
+def socketToNumpy(cameraFeed, sockData):
+    k=3
+    j=cameraFeed.shape[1]
+    i=cameraFeed.shape[0]
+    sockData = np.fromstring(sockData, np.uint8)
+    cameraFeed = np.tile(sockData, 1).reshape((i,j,k))
+
+    return cameraFeed
+
 for res in socket.getaddrinfo(HOST, PORT, socket.AF_UNSPEC,
                               socket.SOCK_STREAM, 0, socket.AI_PASSIVE):
     af, socktype, proto, canonname, sa = res
@@ -51,12 +61,7 @@ while running:
         imgSize-=len(nbytes)
 
     if result:
-        unp = lambda leng: struct.unpack('B', sockData[ptr+leng])[0]
-
-        for i in range(0, cameraFeed.shape[0]):
-            for j in range(0, cameraFeed.shape[1]):
-                cameraFeed[i,j] = [unp(0),unp(1),unp(2)]
-                ptr=ptr+3
+        cameraFeed = socketToNumpy(cameraFeed, sockData)
 
         # Create a window for display.
         cv2.namedWindow("server");
