@@ -85,7 +85,6 @@ int main()
         ptr=ptr+3;
       }
 
-    imwrite("test.jpg", img);
     namedWindow( "Server", CV_WINDOW_AUTOSIZE );// Create a window for display.
     imshow( "Server", img );
     char key = waitKey(30);
