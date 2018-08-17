@@ -13,7 +13,7 @@ FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
 CHANNEL=3
 
-@profile
+
 def socketToNumpy(cameraFeed, sockData):
     k=3
     j=cameraFeed.shape[1]

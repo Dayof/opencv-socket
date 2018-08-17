@@ -6,8 +6,8 @@ PKGCONF_LIBS= `pkg-config --libs opencv`
 
 client:
 	clear
-	g++ $(PKG_CONF_CFLAG) -o client client.cpp $(PKGCONF_LIBS)
+	g++ -std=c++11 $(PKG_CONF_CFLAG) -o client client.cpp $(PKGCONF_LIBS)
 
 server:
 	clear
-	g++ $(PKG_CONF_CFLAG) -o server server.cpp $(PKGCONF_LIBS)
+	g++ -std=c++11 $(PKG_CONF_CFLAG) -o server server.cpp $(PKGCONF_LIBS)
